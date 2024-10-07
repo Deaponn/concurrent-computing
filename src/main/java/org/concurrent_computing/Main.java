@@ -1,17 +1,24 @@
 package org.concurrent_computing;
 
+import java.util.Arrays;
+
 public class Main {
     public static void main(String[] args) throws InterruptedException {
 //        int i = 0;
 //        for (int j = 0; j < 10; j++) {
 //            i += j;
+////            int placeholder = i;
+////            placeholder += j;
+////            i = placeholder;
 //        }
 //        System.out.println(i);
 //          /usr/lib/jvm/java-21-jdk/bin/javap -v Main.class
 
         int[] iterationsList = {1, 2, 3, 5, 10, 15, 30, 50, 100, 200, 500, 1000, 2000, 3000, 4000, 5000, 10000};
         int[] threadsList = {1, 2, 3, 5, 10, 15, 30, 50, 100, 200, 500, 1000, 2000, 3000, 4000, 5000, 10000};
+        System.out.println(Arrays.toString(threadsList).replace("[", "").replace("]", "").replace(",",""));
         for (int iterationsNumber: iterationsList) {
+            System.out.print(iterationsNumber + " ");
             for (int threadsNumber: threadsList) {
                 Value value = new Value();
                 Thread[] threads = new Thread[threadsNumber * 2];
