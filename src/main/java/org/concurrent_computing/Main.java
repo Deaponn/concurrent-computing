@@ -4,44 +4,27 @@ import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
-//        int i = 0;
-//        for (int j = 0; j < 10; j++) {
-//            i += j;
-////            int placeholder = i;
-////            placeholder += j;
-////            i = placeholder;
-//        }
-//        System.out.println(i);
-//          /usr/lib/jvm/java-21-jdk/bin/javap -v Main.class
+        int threadsNumber = 1;
+        int iterationsNumber = 4;
+        ValueMonitor value = new ValueMonitor();
+        Thread[] threads = new Thread[threadsNumber * 2];
 
-        int[] iterationsList = {1, 2, 3, 5, 10, 15, 30, 50, 100, 200, 500, 1000, 2000, 3000, 4000, 5000, 10000};
-        int[] threadsList = {1, 2, 3, 5, 10, 15, 30, 50, 100, 200, 500, 1000, 2000, 3000, 4000, 5000, 10000};
-        System.out.println(Arrays.toString(threadsList).replace("[", "").replace("]", "").replace(",", ""));
-        for (int iterationsNumber : iterationsList) {
-            System.out.print(iterationsNumber + " ");
-            for (int threadsNumber : threadsList) {
-                Value value = new Value();
-                Thread[] threads = new Thread[threadsNumber * 2];
+        for (int i = 0; i < threadsNumber * 2; i += 2) {
+            ValueChanger increment = new ValueChanger(value, true, iterationsNumber);
+            ValueChanger decrement = new ValueChanger(value, false, iterationsNumber);
 
-                for (int i = 0; i < threadsNumber * 2; i += 2) {
-                    ValueChanger increment = new ValueChanger(value, 1, iterationsNumber);
-                    ValueChanger decrement = new ValueChanger(value, -1, iterationsNumber);
-
-                    threads[i] = new Thread(increment);
-                    threads[i + 1] = new Thread(decrement);
-                }
-
-                for (int i = 0; i < threadsNumber * 2; i++) {
-                    threads[i].start();
-                }
-
-                for (int i = 0; i < threadsNumber * 2; i++) {
-                    threads[i].join();
-                }
-
-                System.out.print(value.getValue() + " ");
-            }
-            System.out.println();
+            threads[i + 1] = new Thread(increment);
+            threads[i] = new Thread(decrement);
         }
+
+        for (int i = 0; i < threadsNumber * 2; i++) {
+            threads[i].start();
+        }
+
+        for (int i = 0; i < threadsNumber * 2; i++) {
+            threads[i].join();
+        }
+
+        System.out.print(value.getValue());
     }
 }

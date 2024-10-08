@@ -1,21 +1,31 @@
 package src.main.java.org.concurrent_computing;
 
 public class ValueChanger implements Runnable {
-    private final Value value;
-    private final int delta;
+    private final ValueMonitor value;
+    private final boolean produce;
     private final int iterations;
 
-    public ValueChanger(Value value, int delta, int iterations) {
+    public ValueChanger(ValueMonitor value, boolean produce, int iterations) {
         this.value = value;
-        this.delta = delta;
+        this.produce = produce;
         this.iterations = iterations;
     }
 
 
     @Override
     public void run() {
-        for (int i = 0; i < iterations; i++) {
-            value.addToValue(this.delta);
+        try {
+            if (this.produce) {
+                for (int i = 0; i < this.iterations; i++) {
+                    this.value.produce();
+                }
+            } else {
+                for (int i = 0; i < this.iterations; i++) {
+                    this.value.consume();
+                }
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }
