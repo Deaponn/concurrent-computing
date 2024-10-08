@@ -3,11 +3,11 @@ package src.main.java.org.concurrent_computing;
 public class Value {
     private int value = 0;
 
-    public int getValue() {
+    public synchronized int getValue() {
         return value;
     }
 
-    public void addToValue(int change) {
+    public synchronized void addToValue(int change) {
         value += change;
     }
 }
