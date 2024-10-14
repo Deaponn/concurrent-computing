@@ -1,6 +1,4 @@
-package src.main.java.org.concurrent_computing;
-
-import java.util.Arrays;
+package src.main.java.org.concurrent_computing.monitor;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {

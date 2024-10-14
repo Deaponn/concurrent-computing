@@ -1,4 +1,4 @@
-package src.main.java.org.concurrent_computing;
+package src.main.java.org.concurrent_computing.monitor;
 
 public class ValueChanger implements Runnable {
     private final ValueMonitor value;
