@@ -1,19 +1,26 @@
 package src.main.java.org.concurrent_computing.pkb;
 
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         // we want producers * produce * material == consumers * consume * needs <= maxBuffer
-        int producers = 3;
+        int producers = 1;
         int produce = 1;
-        int materials = 5;
-        int consumers = 1;
-        int consume = 3;
+        int materials = 10;
+        int consumers = 2;
+        int consume = 1;
         int needs = 5;
         int maxBuffer = 5;
 
         Thread[] producersList = new Thread[producers];
         Thread[] consumersList = new Thread[consumers];
-        Buffer buffer = new Buffer(maxBuffer);
+        Lock lock = new ReentrantLock();
+        Condition producersWait = lock.newCondition();
+        Condition consumersWait = lock.newCondition();
+        Buffer buffer = new Buffer(lock, producersWait, consumersWait, maxBuffer);
 
         for (int i = 0; i < producers; i++) {
             Producer producer = new Producer(buffer, produce, materials);

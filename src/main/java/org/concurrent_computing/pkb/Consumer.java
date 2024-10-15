@@ -14,11 +14,7 @@ public class Consumer implements Runnable {
     @Override
     public void run() {
         while (this.needs-- > 0) {
-            try {
-                this.buffer.take(this.consume);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            this.buffer.take(this.consume);
         }
     }
 }
