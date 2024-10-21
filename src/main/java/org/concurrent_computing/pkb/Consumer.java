@@ -11,10 +11,14 @@ public class Consumer implements Runnable {
         this.needs = needs;
     }
 
+    private int consume() {
+        return (int) (Math.random() * this.consume + 1);
+    }
+
     @Override
     public void run() {
         while (this.needs-- > 0) {
-            this.buffer.take(this.consume);
+            this.buffer.take(this.consume());
         }
     }
 }

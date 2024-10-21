@@ -11,10 +11,14 @@ public class Producer implements Runnable {
         this.materials = materials;
     }
 
+    private int produce() {
+        return (int) (Math.random() * this.produce + 1);
+    }
+
     @Override
     public void run() {
         while (this.materials-- > 0) {
-            this.buffer.give(this.produce);
+            this.buffer.give(this.produce());
         }
     }
 }

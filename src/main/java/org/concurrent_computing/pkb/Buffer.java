@@ -21,19 +21,19 @@ public class Buffer {
         return this.buffer;
     }
 
-    public boolean isFull() {
-        return this.buffer == this.maxBuffer;
+    public boolean hasNoSpaceFor(int quantity) {
+        return this.buffer + quantity > this.maxBuffer;
     }
 
-    public boolean isEmpty() {
-        return this.buffer == 0;
+    public boolean hasFewerThan(int quantity) {
+        return this.buffer < quantity;
     }
 
     public void take(int quantity) {
 //        if (this.buffer < quantity) wait();
         try {
             this.lock.lock();
-            while (this.isEmpty()) this.cWait.await();
+            while (this.hasFewerThan(quantity)) this.cWait.await();
             this.buffer -= quantity;
             System.out.println("consuming " + quantity + ", current " + this.buffer);
             pWait.signal();
@@ -49,7 +49,7 @@ public class Buffer {
 //        if (this.buffer + quantity > this.maxBuffer) wait();
         try {
             this.lock.lock();
-            while (this.isFull()) this.pWait.await();
+            while (this.hasNoSpaceFor(quantity)) this.pWait.await();
             this.buffer += quantity;
             System.out.println("producing " + quantity + ", current " + this.buffer);
             cWait.signal();
