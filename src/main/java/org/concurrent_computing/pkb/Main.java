@@ -29,9 +29,11 @@ public class Main {
         CustomThread[] producersList = new CustomThread[producers];
         CustomThread[] consumersList = new CustomThread[consumers];
         CustomReentrantLock lock = new CustomReentrantLock();
+        Condition firstProducerWait = lock.newCondition();
         Condition producersWait = lock.newCondition();
+        Condition firstConsumerWait = lock.newCondition();
         Condition consumersWait = lock.newCondition();
-        Buffer buffer = new Buffer(lock, producersWait, consumersWait, maxBuffer);
+        Buffer buffer = new Buffer(lock, firstProducerWait, producersWait, firstConsumerWait, consumersWait, maxBuffer);
 
         for (int i = 0; i < producers; i++) {
             Producer producer = new Producer(buffer, production, materials);
