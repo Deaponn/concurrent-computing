@@ -1,16 +1,15 @@
 package src.main.java.org.concurrent_computing.pkb;
 
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 
 public class Buffer {
     private int buffer = 0;
     private final int maxBuffer;
-    private final Lock lock;
+    private final CustomReentrantLock lock;
     private final Condition cWait;
     private final Condition pWait;
 
-    Buffer(Lock lock, Condition pWait, Condition cWait, int maxBuffer) {
+    Buffer(CustomReentrantLock lock, Condition pWait, Condition cWait, int maxBuffer) {
         this.maxBuffer = maxBuffer;
         this.lock = lock;
         this.cWait = cWait;
@@ -29,13 +28,18 @@ public class Buffer {
         return this.buffer < quantity;
     }
 
+    private void log() {
+        System.out.println("consumers: " + this.lock.getWaitingThreadsOwn(this.cWait) +
+                " producers: " + this.lock.getWaitingThreadsOwn(this.pWait));
+    }
+
     public void take(int quantity) {
-//        if (this.buffer < quantity) wait();
         try {
             this.lock.lock();
             while (this.hasFewerThan(quantity)) this.cWait.await();
             this.buffer -= quantity;
             System.out.println("consuming " + quantity + ", current " + this.buffer);
+            this.log();
             pWait.signal();
 
         } catch (InterruptedException e) {
@@ -52,6 +56,7 @@ public class Buffer {
             while (this.hasNoSpaceFor(quantity)) this.pWait.await();
             this.buffer += quantity;
             System.out.println("producing " + quantity + ", current " + this.buffer);
+            this.log();
             cWait.signal();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
