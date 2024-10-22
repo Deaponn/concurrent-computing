@@ -1,15 +1,14 @@
 package src.main.java.org.concurrent_computing.pkb;
 
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         int quantity = 10;
-        int producers = 1;
+        int producers = 20;
         int materials = 2147483647; // max is 2147483647
-        int consumers = 1;
+        int consumers = 20;
         int needs = 2147483647; // max is 2147483647
         int maxBuffer = 2 * quantity - 1;
 
@@ -25,7 +24,7 @@ public class Main {
 
         Thread[] producersList = new Thread[producers];
         Thread[] consumersList = new Thread[consumers];
-        Lock lock = new ReentrantLock();
+        ReentrantLock lock = new ReentrantLock();
         Condition firstProducerWait = lock.newCondition();
         Condition producersWait = lock.newCondition();
         Condition firstConsumerWait = lock.newCondition();

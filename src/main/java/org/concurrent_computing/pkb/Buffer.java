@@ -1,20 +1,18 @@
 package src.main.java.org.concurrent_computing.pkb;
 
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Buffer {
     private int buffer = 0;
     private final int maxBuffer;
-    private final Lock lock;
-    private boolean pFirstWaits = false;
+    private final ReentrantLock lock;
     private final Condition pFirstWait;
     private final Condition pWait;
-    private boolean cFirstWaits = false;
     private final Condition cFirstWait;
     private final Condition cWait;
 
-    Buffer(Lock lock, Condition pFirstWait, Condition pWait, Condition cFirstWait, Condition cWait, int maxBuffer) {
+    Buffer(ReentrantLock lock, Condition pFirstWait, Condition pWait, Condition cFirstWait, Condition cWait, int maxBuffer) {
         this.maxBuffer = maxBuffer;
         this.lock = lock;
         this.pFirstWait = pFirstWait;
@@ -36,15 +34,12 @@ public class Buffer {
     }
 
     public void take(int quantity) {
-//        if (this.buffer < quantity) wait();
         try {
             this.lock.lock();
-            while (this.cFirstWaits) this.cWait.await();
-            this.cFirstWaits = true;
+            while (this.lock.hasWaiters(this.cFirstWait)) this.cWait.await();
             while (this.hasFewerThan(quantity)) this.cFirstWait.await();
             this.buffer -= quantity;
             System.out.println("consuming " + quantity + ", current " + this.buffer);
-            this.cFirstWaits = false;
             cWait.signal();
             pFirstWait.signal();
         } catch (InterruptedException e) {
@@ -55,15 +50,12 @@ public class Buffer {
     }
 
     public void give(int quantity) {
-//        if (this.buffer + quantity > this.maxBuffer) wait();
         try {
             this.lock.lock();
-            while (this.pFirstWaits) this.pWait.await();
-            this.pFirstWaits = true;
+            while (this.lock.hasWaiters(this.pFirstWait)) this.pWait.await();
             while (this.hasNoSpaceFor(quantity)) this.pFirstWait.await();
             this.buffer += quantity;
             System.out.println("producing " + quantity + ", current " + this.buffer);
-            this.pFirstWaits = false;
             pWait.signal();
             cFirstWait.signal();
         } catch (InterruptedException e) {
