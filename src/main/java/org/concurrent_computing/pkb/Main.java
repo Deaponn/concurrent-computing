@@ -1,6 +1,5 @@
 package src.main.java.org.concurrent_computing.pkb;
 
-import java.util.Random;
 import java.util.concurrent.locks.Condition;
 import java.util.function.Supplier;
 
@@ -9,7 +8,7 @@ public class Main {
         int maxProduction = 100;
         int maxConsumption = 100;
         Supplier<Integer> production = () -> (int) (Math.random() * maxProduction + 1);
-        Supplier<Integer> consumption = () -> (int) (Math.random() * maxProduction + 1);
+        Supplier<Integer> consumption = () -> (int) (Math.random() * maxConsumption + 1);
         int producers = 250;
         int materials = 2147483647; // max is 2147483647
         int consumers = 250;

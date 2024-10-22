@@ -8,15 +8,14 @@ public class Buffer {
     private int buffer = 0;
     private final int maxBuffer;
     private final CustomReentrantLock lock;
-    private boolean pFirstWaits = false;
     private final Condition pFirstWait;
     private final Condition pWait;
-    private boolean cFirstWaits = false;
     private final Condition cFirstWait;
     private final Condition cWait;
     private Collection<CustomThread> previousThreads = new LinkedList<>();
 
     Buffer(CustomReentrantLock lock, Condition pFirstWait, Condition pWait, Condition cFirstWait, Condition cWait, int maxBuffer) {
+
         this.maxBuffer = maxBuffer;
         this.lock = lock;
         this.pFirstWait = pFirstWait;
@@ -53,9 +52,12 @@ public class Buffer {
         List<CustomThread> consumersSorted = consumers.stream().sorted(CustomThread::compare).toList();
         List<CustomThread> producersSorted = producers.stream().sorted(CustomThread::compare).toList();
 
-        if (!consumersSorted.isEmpty() && consumersSorted.get(0).getStarving() > 300)
+        if (!consumersSorted.isEmpty() && consumersSorted.get(0).getStarving() > 0)
             System.out.println(
-                    "Consumers: "
+                    "Buffer: " + this.buffer
+                            + ", First consumer: " + this.lock.getWaitingThreadsOwn(this.cFirstWait)
+                            + ", First producer: " + this.lock.getWaitingThreadsOwn(this.pFirstWait)
+                            + ", Consumers: "
                             + consumersSorted
                             + ", Producers: "
                             + producersSorted
@@ -67,12 +69,10 @@ public class Buffer {
     public void take(int quantity) {
         try {
             this.lock.lock();
-            this.log();
-            while (this.cFirstWaits) this.cWait.await();
-            this.cFirstWaits = true;
+            while (this.lock.hasWaiters(this.cFirstWait)) this.cWait.await();
             while (this.hasFewerThan(quantity)) this.cFirstWait.await();
+            this.log();
             this.buffer -= quantity;
-            this.cFirstWaits = false;
             cWait.signal();
             pFirstWait.signal();
         } catch (InterruptedException e) {
@@ -85,12 +85,10 @@ public class Buffer {
     public void give(int quantity) {
         try {
             this.lock.lock();
-            this.log();
-            while (this.pFirstWaits) this.pWait.await();
-            this.pFirstWaits = true;
+            while (this.lock.hasWaiters(this.pFirstWait)) this.pWait.await();
             while (this.hasNoSpaceFor(quantity)) this.pFirstWait.await();
+            this.log();
             this.buffer += quantity;
-            this.pFirstWaits = false;
             pWait.signal();
             cFirstWait.signal();
         } catch (InterruptedException e) {
