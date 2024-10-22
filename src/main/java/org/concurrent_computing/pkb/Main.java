@@ -26,9 +26,11 @@ public class Main {
         Thread[] producersList = new Thread[producers];
         Thread[] consumersList = new Thread[consumers];
         Lock lock = new ReentrantLock();
+        Condition firstProducerWait = lock.newCondition();
         Condition producersWait = lock.newCondition();
+        Condition firstConsumerWait = lock.newCondition();
         Condition consumersWait = lock.newCondition();
-        Buffer buffer = new Buffer(lock, producersWait, consumersWait, maxBuffer);
+        Buffer buffer = new Buffer(lock, firstProducerWait, producersWait, firstConsumerWait, consumersWait, maxBuffer);
 
         for (int i = 0; i < producers; i++) {
             Producer producer = new Producer(buffer, quantity, materials);
