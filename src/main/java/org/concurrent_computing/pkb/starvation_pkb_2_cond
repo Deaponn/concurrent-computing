@@ -1,0 +1,32 @@
+1 Producer, 3 Consuments, 19 Buffer, 10 MaxProduction
+
+buffer: 0, consuments: [], producers: []
+C1 - wants 10
+buffer: 0, consuments: [C1(10)], producers: []
+C2 - wants 1
+buffer: 0, consuments: [C1(10), C2(1)], producers: []
+P1 - produces 2, signals C1
+buffer: 2, consuments: [C1(10), C2(1)], producers: []
+C1 - buffer too small, signals C2
+buffer: 2, consuments: [C1(10), C2(1)], producers: []
+C2 - consumes 1
+buffer: 1, consuments: [C1(10)], producers: []
+C3 - wants 1
+buffer: 0, consuments: [C1(10)], producers: []
+P1 - produces 2, signals C1
+buffer: 2, consuments: [C1(10)], producers: []
+C1 - buffer too small
+P1 - produces 4, signals C1
+buffer: 6, consuments: [C1(10)], producers: []
+C1 - buffer too small
+C3 - wants 1
+buffer: 5, consuments: [C1(10)], producers: []
+C2 - wants 2
+buffer: 3, consuments: [C1(10)], producers: []
+C3 - wants 1
+buffer: 2, consuments: [C1(10)], producers: []
+P1 - produces 3, signals C1
+buffer: 5, consuments: [C1(10)], producers: []
+C1 - buffer too small
+C2 - wants 1
+...
