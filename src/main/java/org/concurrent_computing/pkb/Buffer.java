@@ -1,6 +1,8 @@
 package src.main.java.org.concurrent_computing.pkb;
 
+import java.util.*;
 import java.util.concurrent.locks.Condition;
+import java.util.stream.Stream;
 
 public class Buffer {
     private int buffer = 0;
@@ -8,6 +10,7 @@ public class Buffer {
     private final CustomReentrantLock lock;
     private final Condition cWait;
     private final Condition pWait;
+    private Collection<CustomThread> previousThreads = new LinkedList<>();
 
     Buffer(CustomReentrantLock lock, Condition pWait, Condition cWait, int maxBuffer) {
         this.maxBuffer = maxBuffer;
@@ -29,17 +32,38 @@ public class Buffer {
     }
 
     private void log() {
-        System.out.println("consumers: " + this.lock.getWaitingThreadsOwn(this.cWait) +
-                " producers: " + this.lock.getWaitingThreadsOwn(this.pWait));
+        Collection<CustomThread> consumers = (Collection) this.lock.getWaitingThreadsOwn(this.cWait);
+        Collection<CustomThread> producers = (Collection) this.lock.getWaitingThreadsOwn(this.pWait);
+        Collection<CustomThread> allThreads = Stream.concat(consumers.stream(), producers.stream()).toList();
+
+        for (CustomThread thread : allThreads) {
+            if (this.previousThreads.contains(thread)) {
+                thread.increaseStarving();
+            } else {
+                thread.startStarving();
+            }
+        }
+
+        List<CustomThread> consumersSorted = consumers.stream().sorted(CustomThread::compare).toList();
+        List<CustomThread> producersSorted = producers.stream().sorted(CustomThread::compare).toList();
+
+        if (!consumersSorted.isEmpty() && consumersSorted.get(0).getStarving() > 300)
+            System.out.println(
+                    "Consumers: "
+                            + consumersSorted
+                            + ", Producers: "
+                            + producersSorted
+            );
+
+        this.previousThreads = allThreads;
     }
 
     public void take(int quantity) {
         try {
             this.lock.lock();
+            this.log();
             while (this.hasFewerThan(quantity)) this.cWait.await();
             this.buffer -= quantity;
-            System.out.println("consuming " + quantity + ", current " + this.buffer);
-            this.log();
             pWait.signal();
 
         } catch (InterruptedException e) {
@@ -50,13 +74,11 @@ public class Buffer {
     }
 
     public void give(int quantity) {
-//        if (this.buffer + quantity > this.maxBuffer) wait();
         try {
             this.lock.lock();
+            this.log();
             while (this.hasNoSpaceFor(quantity)) this.pWait.await();
             this.buffer += quantity;
-            System.out.println("producing " + quantity + ", current " + this.buffer);
-            this.log();
             cWait.signal();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
