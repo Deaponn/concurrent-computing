@@ -1,0 +1,25 @@
+2 Producer, 2 Consuments, 19 Buffer, 10 MaxProduction
+
+buffer: 0, firstConsument: [], consuments: [], firstProducer: [], producers: []
+C1 - wants 8
+buffer: 0, firstConsument: [C1(8)], consuments: [], firstProducer: [], producers: []
+P1 - produces 1, signals firstConsument and producers
+buffer: 1, firstConsument: [], consuments: [], firstProducer: [], producers: []
+C2 - wants 2
+buffer: 1, firstConsument: [C2(2)], consuments: [], firstProducer: [], producers: []
+C1 - buffer too small
+buffer: 1, firstConsument: [C2(2), C1(8)], consuments: [], firstProducer: [], producers: []
+P1 - produces 10, signals firstConsument (ex. C2) and producers
+buffer: 11, firstConsument: [C1(8)], consuments: [], firstProducer: [], producers: []
+P1 - produces 10
+buffer: 11, firstConsument: [C1(8)], consuments: [], firstProducer: [P1(10)], producers: []
+C2 - takes 2, signals firstProducer and consuments
+buffer: 9, firstConsument: [C1(8)], consuments: [], firstProducer: [], producers: []
+P2 - produces 10
+buffer: 19, firstConsument: [C1(8)], consuments: [], firstProducer: [], producers: []
+P1 - buffer too full
+buffer: 19, firstConsument: [C1(8)], consuments: [], firstProducer: [P1(10)], producers: []
+C2 - wants 1, firstConsument occupied
+buffer: 19, firstConsument: [C1(8)], consuments: [C2(1)], firstProducer: [P1(10)], producers: []
+P2 - produces 1, firstProducer occupied
+buffer: 19, firstConsument: [C1(8)], consuments: [C2(1)], firstProducer: [P1(10)], producers: [P2(1)]
