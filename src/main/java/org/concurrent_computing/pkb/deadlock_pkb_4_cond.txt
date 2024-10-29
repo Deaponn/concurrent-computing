@@ -5,7 +5,7 @@ C1 - wants 8
 buffer: 0, firstConsument: [C1(8)], consuments: [], firstProducer: [], producers: []
 P1 - produces 1, signals firstConsument and producers
 buffer: 1, firstConsument: [], consuments: [], firstProducer: [], producers: []
-C2 - wants 2
+C2 - wants 2            <------ C2 goes in front of C1, shouldn't
 buffer: 1, firstConsument: [C2(2)], consuments: [], firstProducer: [], producers: []
 C1 - buffer too small
 buffer: 1, firstConsument: [C2(2), C1(8)], consuments: [], firstProducer: [], producers: []
@@ -15,7 +15,7 @@ P1 - produces 10
 buffer: 11, firstConsument: [C1(8)], consuments: [], firstProducer: [P1(10)], producers: []
 C2 - takes 2, signals firstProducer and consuments
 buffer: 9, firstConsument: [C1(8)], consuments: [], firstProducer: [], producers: []
-P2 - produces 10
+P2 - produces 10        <------ P2 goes in front of P1, shouldn't
 buffer: 19, firstConsument: [C1(8)], consuments: [], firstProducer: [], producers: []
 P1 - buffer too full
 buffer: 19, firstConsument: [C1(8)], consuments: [], firstProducer: [P1(10)], producers: []
