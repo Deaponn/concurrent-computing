@@ -6,19 +6,17 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Buffer {
     private int buffer = 0;
     private final int maxBuffer;
-    private final ReentrantLock lock;
-    private final Condition pFirstWait;
-    private final Condition pWait;
-    private final Condition cFirstWait;
-    private final Condition cWait;
+    private final ReentrantLock lockProd;
+    private final ReentrantLock lockCons;
+    private final ReentrantLock lockCommon;
+    private final Condition condCommon;
 
-    Buffer(ReentrantLock lock, Condition pFirstWait, Condition pWait, Condition cFirstWait, Condition cWait, int maxBuffer) {
+    Buffer(ReentrantLock lockProd, ReentrantLock lockCons, ReentrantLock lockCommon, Condition condCommon, int maxBuffer) {
         this.maxBuffer = maxBuffer;
-        this.lock = lock;
-        this.pFirstWait = pFirstWait;
-        this.pWait = pWait;
-        this.cFirstWait = cFirstWait;
-        this.cWait = cWait;
+        this.lockProd = lockProd;
+        this.lockCons = lockCons;
+        this.lockCommon = lockCommon;
+        this.condCommon = condCommon;
     }
 
     public int getBuffer() {
@@ -34,34 +32,34 @@ public class Buffer {
     }
 
     public void take(int quantity) {
+        this.lockCons.lock();
         try {
-            this.lock.lock();
-            while (this.lock.hasWaiters(this.cFirstWait)) this.cWait.await();
-            while (this.hasFewerThan(quantity)) this.cFirstWait.await();
+            this.lockCommon.lock();
+            while (this.hasFewerThan(quantity)) this.condCommon.await();
             this.buffer -= quantity;
-            System.out.println("consuming " + quantity + ", current " + this.buffer);
-            cWait.signal();
-            pFirstWait.signal();
+            System.out.println("consuming " + quantity);
+            this.condCommon.signal();
+            this.lockCommon.unlock();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            lock.unlock();
+            this.lockCons.unlock();
         }
     }
 
     public void give(int quantity) {
+        this.lockProd.lock();
         try {
-            this.lock.lock();
-            while (this.lock.hasWaiters(this.pFirstWait)) this.pWait.await();
-            while (this.hasNoSpaceFor(quantity)) this.pFirstWait.await();
+            this.lockCommon.lock();
+            while (this.hasNoSpaceFor(quantity)) this.condCommon.await();
             this.buffer += quantity;
-            System.out.println("producing " + quantity + ", current " + this.buffer);
-            pWait.signal();
-            cFirstWait.signal();
+            System.out.println("producing " + quantity);
+            this.condCommon.signal();
+            this.lockCommon.unlock();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            lock.unlock();
+            this.lockProd.unlock();
         }
     }
 }
