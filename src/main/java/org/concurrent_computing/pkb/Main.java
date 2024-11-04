@@ -1,8 +1,11 @@
 package src.main.java.org.concurrent_computing.pkb;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static java.lang.System.exit;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
@@ -48,14 +51,10 @@ public class Main {
             consumersList[i].start();
         }
 
-        for (int i = 0; i < producers; i++) {
-            producersList[i].join();
-        }
+        TimeUnit.SECONDS.sleep(10);
 
-        for (int i = 0; i < consumers; i++) {
-            consumersList[i].join();
-        }
+        System.out.print("Wykonanych operacji: " + buffer.getOperationCount());
 
-        System.out.print(buffer.getBuffer());
+        exit(0);
     }
 }

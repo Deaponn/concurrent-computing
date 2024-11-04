@@ -9,6 +9,7 @@ public class Buffer {
     private final Lock lock;
     private final Condition cWait;
     private final Condition pWait;
+    private int operationCount = 0;
 
     Buffer(Lock lock, Condition pWait, Condition cWait, int maxBuffer) {
         this.maxBuffer = maxBuffer;
@@ -21,6 +22,10 @@ public class Buffer {
         return this.buffer;
     }
 
+    public int getOperationCount() {
+        return operationCount;
+    }
+
     public boolean hasNoSpaceFor(int quantity) {
         return this.buffer + quantity > this.maxBuffer;
     }
@@ -30,14 +35,12 @@ public class Buffer {
     }
 
     public void take(int quantity) {
-//        if (this.buffer < quantity) wait();
         try {
             this.lock.lock();
             while (this.hasFewerThan(quantity)) this.cWait.await();
             this.buffer -= quantity;
-            System.out.println("consuming " + quantity + ", current " + this.buffer);
+            this.operationCount++;
             pWait.signal();
-
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -46,12 +49,11 @@ public class Buffer {
     }
 
     public void give(int quantity) {
-//        if (this.buffer + quantity > this.maxBuffer) wait();
         try {
             this.lock.lock();
             while (this.hasNoSpaceFor(quantity)) this.pWait.await();
             this.buffer += quantity;
-            System.out.println("producing " + quantity + ", current " + this.buffer);
+            this.operationCount++;
             cWait.signal();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
