@@ -10,6 +10,7 @@ public class Buffer {
     private final ReentrantLock lockCons;
     private final ReentrantLock lockCommon;
     private final Condition condCommon;
+    private int operationCount = 0;
 
     Buffer(ReentrantLock lockProd, ReentrantLock lockCons, ReentrantLock lockCommon, Condition condCommon, int maxBuffer) {
         this.maxBuffer = maxBuffer;
@@ -21,6 +22,10 @@ public class Buffer {
 
     public int getBuffer() {
         return this.buffer;
+    }
+
+    public int getOperationCount() {
+        return operationCount;
     }
 
     public boolean hasNoSpaceFor(int quantity) {
@@ -37,7 +42,7 @@ public class Buffer {
             this.lockCommon.lock();
             while (this.hasFewerThan(quantity)) this.condCommon.await();
             this.buffer -= quantity;
-            System.out.println("consuming " + quantity);
+            this.operationCount++;
             this.condCommon.signal();
             this.lockCommon.unlock();
         } catch (InterruptedException e) {
@@ -53,7 +58,7 @@ public class Buffer {
             this.lockCommon.lock();
             while (this.hasNoSpaceFor(quantity)) this.condCommon.await();
             this.buffer += quantity;
-            System.out.println("producing " + quantity);
+            this.operationCount++;
             this.condCommon.signal();
             this.lockCommon.unlock();
         } catch (InterruptedException e) {
