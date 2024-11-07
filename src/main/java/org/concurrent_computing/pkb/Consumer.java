@@ -1,23 +1,23 @@
 package src.main.java.org.concurrent_computing.pkb;
 
+import java.util.function.Supplier;
+
 public class Consumer implements Runnable {
     private final Buffer buffer;
-    private final int consume;
-    private int needs;
+    private final Supplier<Integer> consume;
 
-    public Consumer(Buffer buffer, int consume, int needs) {
+    public Consumer(Buffer buffer, Supplier<Integer> consume) {
         this.buffer = buffer;
         this.consume = consume;
-        this.needs = needs;
     }
 
     private int consume() {
-        return (int) (Math.random() * this.consume + 1);
+        return this.consume.get();
     }
 
     @Override
     public void run() {
-        while (this.needs-- > 0) {
+        while (true) {
             this.buffer.take(this.consume());
         }
     }
