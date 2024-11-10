@@ -42,8 +42,8 @@ public class Buffer2Cond extends Buffer {
     }
 
     public void give(int quantity) {
+        this.lock.lock();
         try {
-            this.lock.lock();
             while (this.hasNoSpaceFor(quantity)) this.producersCondition.await();
             this.buffer += quantity;
             this.operationCount++;

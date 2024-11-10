@@ -70,7 +70,8 @@ public class Main {
         }
 
         for (int i = 0; i < threads; i++) {
-            producersAndConsumers[i].interrupt();
+            producersAndConsumers[2 * i].interrupt();
+            producersAndConsumers[2 * i + 1].interrupt();
         }
 
         // aby dac chwile czasu na wykonanie instrukcji z producersAndConsumers[i].interrupt();
