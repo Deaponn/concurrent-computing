@@ -28,8 +28,7 @@ public class Producer implements CSProcess {
     public void run() {
         while (true) {
             int item = (int) (Math.random() * 100) + 1; // produce
-            this.requestBuffer.write(0); // request buffer index
-            System.out.println("produce");
+            this.requestBuffer.write(this.index); // request buffer index
             int bufferIndex = this.responseBuffer.read(); // wait for assigned buffer index
             this.sendToBuffer[bufferIndex].write(item); // send to the buffer
         }

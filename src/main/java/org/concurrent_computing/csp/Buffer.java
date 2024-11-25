@@ -7,7 +7,7 @@ import java.util.Arrays;
 public class Buffer implements CSProcess {
     private final int index;
     private final int producersCount;
-    private final int consumersCount;
+    private int bufferStorage = 0;
     private boolean bufferFull = false;
     private final AltingChannelInputInt[] producersInputs;
     private final AltingChannelInputInt[] consumersRequests;
@@ -16,7 +16,6 @@ public class Buffer implements CSProcess {
     public Buffer(int bufferIndex, int producersCount, int consumersCount) {
         this.index = bufferIndex;
         this.producersCount = producersCount;
-        this.consumersCount = consumersCount;
 
         this.producersInputs = new AltingChannelInputInt[producersCount];
         this.consumersRequests = new AltingChannelInputInt[consumersCount];
@@ -49,22 +48,19 @@ public class Buffer implements CSProcess {
 
         while (true) {
             int index = alternative.select();
-            AlternativeOutput action = index < producersCount ? AlternativeOutput.PRODUCER :
-                    index < producersCount + consumersCount ? AlternativeOutput.CONSUMER : AlternativeOutput.SKIP;
+            AlternativeOutput action = index < producersCount ? AlternativeOutput.PRODUCER : AlternativeOutput.CONSUMER;
 
             switch (action) {
                 case PRODUCER -> {
                     if (this.bufferFull) continue;
-                    int item = this.producersInputs[index].read(); // consume value and release the producer
+                    this.bufferStorage = this.producersInputs[index].read(); // consume value and release the producer
                     this.bufferFull = true;
                 }
                 case CONSUMER -> {
                     if (!this.bufferFull) continue;
-                    int item = this.consumersRequests[index - this.producersCount].read(); // release the consumer
+                    int consumerIndex = this.consumersRequests[index - this.producersCount].read(); // release the consumer
                     this.bufferFull = false;
-                    this.consumersResponses[index - this.producersCount].write(0); // send the value to consumer
-                }
-                case SKIP -> {
+                    this.consumersResponses[index - this.producersCount].write(this.bufferStorage); // send the value to consumer
                 }
             }
         }

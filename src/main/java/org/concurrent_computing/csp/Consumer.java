@@ -29,9 +29,9 @@ public class Consumer implements CSProcess {
 
     public void run() {
         while (true) {
-            this.requestBuffer.write(0); // request buffer index from middleman
+            this.requestBuffer.write(this.index); // request buffer index from middleman
             int bufferIndex = this.responseBuffer.read(); // wait for assigned buffer index
-            this.requestFromBuffer[bufferIndex].write(0); // tell buffer to go into sending state
+            this.requestFromBuffer[bufferIndex].write(this.index); // tell buffer to go into sending state
             int bufferContent = this.receiveFromBuffer[bufferIndex].read(); // receive from the buffer
             System.out.println(bufferContent);
         }
