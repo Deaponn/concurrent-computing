@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 public class Middleman implements CSProcess {
     private final int buffersCount;
+    private final int bufferCapacity;
     private final int producersCount;
     private int buffersTaken = 0;
     private int nextProducerBuffer = 0;
@@ -20,8 +21,9 @@ public class Middleman implements CSProcess {
     private int deactivatedCount = 0;
     private final ResultCollector resultCollector;
 
-    public Middleman(int buffersCount, int producersCount, int consumersCount, ResultCollector resultCollector) {
+    public Middleman(int buffersCount, int bufferCapacity, int producersCount, int consumersCount, ResultCollector resultCollector) {
         this.buffersCount = buffersCount;
+        this.bufferCapacity = bufferCapacity;
         this.producersCount = producersCount;
 
         this.producersRequests = new AltingChannelInputInt[producersCount];
@@ -73,10 +75,14 @@ public class Middleman implements CSProcess {
         Alternative alternativeConsumers = new Alternative(this.consumersRequests);
 
         while (this.isActive) {
-            int index = buffersTaken == 0 ? alternativeProducers.select() :
-                    buffersTaken == this.buffersCount ? alternativeConsumers.select() : alternativeAll.select();
+            boolean producersOnly = buffersTaken == 0;
+            boolean consumersOnly = buffersTaken == this.buffersCount * this.bufferCapacity;
 
-            if (buffersTaken == this.buffersCount) index += this.producersCount;
+            int index = producersOnly ? alternativeProducers.select() :
+                    consumersOnly ? alternativeConsumers.select() :
+                            alternativeAll.select();
+
+            if (consumersOnly) index += this.producersCount;
 
             AlternativeOutput action = index < producersCount ? AlternativeOutput.PRODUCER : AlternativeOutput.CONSUMER;
 

@@ -10,21 +10,24 @@ public final class Main {
         int producersCount = 4;
         int consumersCount = 5;
 
+        int bufferCapacity = 10;
+        int itemSize = 10; // in bytes
+
         Buffer[] buffers = new Buffer[buffersCount];
         Producer[] producers = new Producer[producersCount];
         Consumer[] consumers = new Consumer[consumersCount];
 
         ResultCollector resultCollector = new ResultCollector(producers, consumers, buffers, 1);
 
-        Middleman middleman = new Middleman(buffersCount, producersCount, consumersCount, resultCollector);
+        Middleman middleman = new Middleman(buffersCount, bufferCapacity, producersCount, consumersCount, resultCollector);
 
         for (int i = 0; i < buffersCount; i++) {
-            Buffer buffer = new Buffer(i, producersCount, consumersCount);
+            Buffer buffer = new Buffer(i, bufferCapacity, itemSize, producersCount, consumersCount);
             buffers[i] = buffer;
         }
 
         for (int i = 0; i < producersCount; i++) {
-            Producer producer = new Producer(i, buffersCount, middleman);
+            Producer producer = new Producer(i, itemSize, buffersCount, middleman);
             for (Buffer buffer : buffers) {
                 producer.registerBuffer(buffer);
             }

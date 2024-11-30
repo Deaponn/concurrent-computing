@@ -7,7 +7,7 @@ public class Consumer implements CSProcess {
     private final ChannelOutputInt requestBuffer;
     private final AltingChannelInputInt responseBuffer;
     private final ChannelOutputInt[] requestFromBuffer;
-    private final AltingChannelInputInt[] receiveFromBuffer;
+    private final AltingChannelInput[] receiveFromBuffer;
     private int opCount = 0;
     private boolean isActive = true;
     private final Middleman middleman;
@@ -20,7 +20,7 @@ public class Consumer implements CSProcess {
         this.responseBuffer = middleman.registerConsumer(this.index, middlemanChannel.in());
 
         this.requestFromBuffer = new ChannelOutputInt[buffersCount];
-        this.receiveFromBuffer = new AltingChannelInputInt[buffersCount];
+        this.receiveFromBuffer = new AltingChannelInput[buffersCount];
 
         this.middleman = middleman;
     }
@@ -45,7 +45,7 @@ public class Consumer implements CSProcess {
             this.requestBuffer.write(this.index); // request buffer index from middleman
             int bufferIndex = this.responseBuffer.read(); // wait for assigned buffer index
             this.requestFromBuffer[bufferIndex].write(this.index); // tell buffer to go into sending state
-            int bufferContent = this.receiveFromBuffer[bufferIndex].read(); // receive from the buffer
+            char[] bufferContent = (char[]) this.receiveFromBuffer[bufferIndex].read(); // receive from the buffer
             this.opCount++;
         }
         this.middleman.deactivate();
