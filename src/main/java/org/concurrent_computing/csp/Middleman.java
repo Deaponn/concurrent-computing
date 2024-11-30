@@ -3,6 +3,7 @@ package src.main.java.org.concurrent_computing.csp;
 import org.jcsp.lang.*;
 
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 public class Middleman implements CSProcess {
     private final int buffersCount;
@@ -14,8 +15,12 @@ public class Middleman implements CSProcess {
     private final ChannelOutputInt[] producersResponses;
     private final AltingChannelInputInt[] consumersRequests;
     private final ChannelOutputInt[] consumersResponses;
+    private int opCount = 0;
+    private boolean isActive = true;
+    private int deactivatedCount = 0;
+    private final ResultCollector resultCollector;
 
-    public Middleman(int buffersCount, int producersCount, int consumersCount) {
+    public Middleman(int buffersCount, int producersCount, int consumersCount, ResultCollector resultCollector) {
         this.buffersCount = buffersCount;
         this.producersCount = producersCount;
 
@@ -24,6 +29,8 @@ public class Middleman implements CSProcess {
 
         this.consumersRequests = new AltingChannelInputInt[consumersCount];
         this.consumersResponses = new ChannelOutputInt[consumersCount];
+
+        this.resultCollector = resultCollector;
     }
 
     public AltingChannelInputInt registerProducer(int producerIndex, AltingChannelInputInt request) {
@@ -44,6 +51,18 @@ public class Middleman implements CSProcess {
         return responseChannel.in();
     }
 
+    int getOpCount() {
+        return this.opCount;
+    }
+
+    void deactivate() {
+        this.deactivatedCount++;
+        if (this.deactivatedCount == this.producersRequests.length + this.consumersRequests.length) {
+            this.isActive = false;
+            this.resultCollector.saveResults(this.opCount);
+        }
+    }
+
     @Override
     public void run() {
         Guard[] guards = Arrays.stream(new Guard[][]{this.producersRequests, this.consumersRequests})
@@ -51,13 +70,13 @@ public class Middleman implements CSProcess {
                 .toArray(Guard[]::new);
 
         Alternative alternativeAll = new Alternative(guards);
-        // these other alternatives are used when there is no possibility of the other
+        // these other alternatives are used when there is no possibility for the other
         // class of processes to receive attention
         // for example when all buffers are full no Producer should receive attention
         Alternative alternativeProducers = new Alternative(this.producersRequests);
         Alternative alternativeConsumers = new Alternative(this.consumersRequests);
 
-        while (true) {
+        while (this.isActive) {
             int index = buffersTaken == 0 ? alternativeProducers.select() :
                     buffersTaken == this.buffersCount ? alternativeConsumers.select() : alternativeAll.select();
 
@@ -79,6 +98,7 @@ public class Middleman implements CSProcess {
                     this.buffersTaken--;
                 }
             }
+            this.opCount++;
         }
     }
 }

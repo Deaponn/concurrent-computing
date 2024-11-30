@@ -12,6 +12,8 @@ public class Buffer implements CSProcess {
     private final AltingChannelInputInt[] producersInputs;
     private final AltingChannelInputInt[] consumersRequests;
     private final ChannelOutputInt[] consumersResponses;
+    private int opCount = 0;
+    private boolean isActive = true;
 
     public Buffer(int bufferIndex, int producersCount, int consumersCount) {
         this.index = bufferIndex;
@@ -39,6 +41,14 @@ public class Buffer implements CSProcess {
         return responseChannel.in();
     }
 
+    int getOpCount() {
+        return this.opCount;
+    }
+
+    void deactivate() {
+        this.isActive = false;
+    }
+
     public void run() {
         Guard[] guards = Arrays.stream(new Guard[][]{this.producersInputs, this.consumersRequests})
                 .flatMap(Arrays::stream)
@@ -46,7 +56,7 @@ public class Buffer implements CSProcess {
 
         Alternative alternative = new Alternative(guards);
 
-        while (true) {
+        while (this.isActive) {
             int index = alternative.select();
             AlternativeOutput action = index < producersCount ? AlternativeOutput.PRODUCER : AlternativeOutput.CONSUMER;
 
@@ -63,6 +73,7 @@ public class Buffer implements CSProcess {
                     this.consumersResponses[index - this.producersCount].write(this.bufferStorage); // send the value to consumer
                 }
             }
+            this.opCount++;
         }
     }
 }

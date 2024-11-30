@@ -5,7 +5,7 @@ import org.jcsp.lang.*;
 import java.util.Arrays;
 
 public final class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         int buffersCount = 5;
         int producersCount = 5;
         int consumersCount = 5;
@@ -14,7 +14,9 @@ public final class Main {
         Producer[] producers = new Producer[producersCount];
         Consumer[] consumers = new Consumer[consumersCount];
 
-        Middleman middleman = new Middleman(buffersCount, producersCount, consumersCount);
+        ResultCollector resultCollector = new ResultCollector(producers, consumers, buffers, 1);
+
+        Middleman middleman = new Middleman(buffersCount, producersCount, consumersCount, resultCollector);
 
         for (int i = 0; i < buffersCount; i++) {
             Buffer buffer = new Buffer(i, producersCount, consumersCount);
@@ -37,11 +39,11 @@ public final class Main {
             consumers[i] = consumer;
         }
 
-        CSProcess[] procList = Arrays.stream(new CSProcess[][]{{middleman}, buffers, producers, consumers})
+        CSProcess[] procList = Arrays.stream(new CSProcess[][]{
+                        {middleman}, buffers, producers, consumers, {resultCollector}
+                })
                 .flatMap(Arrays::stream)
                 .toArray(CSProcess[]::new);
-
-        System.out.println("startup");
 
         Parallel par = new Parallel(procList);
         par.run();
