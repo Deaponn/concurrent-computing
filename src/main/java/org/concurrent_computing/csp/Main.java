@@ -6,11 +6,11 @@ import java.util.Arrays;
 
 public final class Main {
     public static void main(String[] args) throws InterruptedException {
-        int buffersCount = 5;
-        int producersCount = 5;
+        int buffersCount = 3;
+        int producersCount = 4;
         int consumersCount = 5;
 
-        Buffer[] buffers = new Buffer[producersCount];
+        Buffer[] buffers = new Buffer[buffersCount];
         Producer[] producers = new Producer[producersCount];
         Consumer[] consumers = new Consumer[consumersCount];
 

@@ -51,15 +51,11 @@ public class Middleman implements CSProcess {
         return responseChannel.in();
     }
 
-    int getOpCount() {
-        return this.opCount;
-    }
-
     void deactivate() {
         this.deactivatedCount++;
         if (this.deactivatedCount == this.producersRequests.length + this.consumersRequests.length) {
             this.isActive = false;
-            this.resultCollector.saveResults(this.opCount);
+            this.resultCollector.collectResults(this.opCount);
         }
     }
 

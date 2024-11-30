@@ -30,7 +30,7 @@ public class Main {
         int[] results4Cond = benchmark(threads, testSeconds, randomQuantity, buffer4cond, "4 Cond");
         int[] results3Lock = benchmark(threads, testSeconds, randomQuantity, buffer3lock, "3 Lock");
 
-        String filename = String.format("results%dto%db%dt%d.csv", minQuantity, maxQuantity, maxBuffer, threads * 2);
+        String filename = String.format("pkb_test/results%dto%db%dt%d.csv", minQuantity, maxQuantity, maxBuffer, threads * 2);
 
         saveToCSV(new int[][]{results2Cond, results4Cond, results3Lock}, filename);
 
