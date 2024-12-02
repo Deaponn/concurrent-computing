@@ -6,18 +6,19 @@ import java.util.Arrays;
 
 public final class Main {
     public static void main(String[] args) throws InterruptedException {
-        int buffersCount = 3;
-        int producersCount = 4;
-        int consumersCount = 5;
+        int buffersCount = 150;
+        int producersCount = 250;
+        int consumersCount = 250;
 
         int bufferCapacity = 10;
-        int itemSize = 10; // in bytes
+        int itemSize = 1024 * 1024; // in bytes
+        int testTime = 10;
 
         Buffer[] buffers = new Buffer[buffersCount];
         Producer[] producers = new Producer[producersCount];
         Consumer[] consumers = new Consumer[consumersCount];
 
-        ResultCollector resultCollector = new ResultCollector(producers, consumers, buffers, 1);
+        ResultCollector resultCollector = new ResultCollector(producers, consumers, buffers, bufferCapacity, itemSize, testTime);
 
         Middleman middleman = new Middleman(buffersCount, bufferCapacity, producersCount, consumersCount, resultCollector);
 

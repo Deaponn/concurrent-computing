@@ -14,12 +14,17 @@ public class ResultCollector implements CSProcess {
     private final Producer[] producers;
     private final Consumer[] consumers;
     private final Buffer[] buffers;
+    private final int bufferCapacity;
+    private final int itemSize;
     private final int timeSleep;
 
-    public ResultCollector(Producer[] producers, Consumer[] consumers, Buffer[] buffers, int timeSleep) {
+    public ResultCollector(Producer[] producers, Consumer[] consumers, Buffer[] buffers,
+                           int bufferCapacity, int itemSize, int timeSleep) {
         this.producers = producers;
         this.consumers = consumers;
         this.buffers = buffers;
+        this.bufferCapacity = bufferCapacity;
+        this.itemSize = itemSize;
         this.timeSleep = timeSleep;
     }
 
@@ -29,22 +34,22 @@ public class ResultCollector implements CSProcess {
         }
 
         ResultCollector.saveToCSV(middlemanOpCount,
-                Arrays.stream(producers)
+                Arrays.stream(this.producers)
                         .mapToInt(Producer::getOpCount)
                         .toArray(),
-                Arrays.stream(consumers)
+                Arrays.stream(this.consumers)
                         .mapToInt(Consumer::getOpCount)
                         .toArray(),
-                Arrays.stream(buffers)
+                Arrays.stream(this.buffers)
                         .mapToInt(Buffer::getOpCount)
                         .toArray(),
                 // es, bs, b, p, k - element size, buffer size, buffers, producers, konsumers,
                 String.format("csp_test/results%des%dbs%db%dp%dk.csv",
-                        1,
-                        1,
-                        buffers.length,
-                        producers.length,
-                        consumers.length
+                        this.itemSize,
+                        this.bufferCapacity,
+                        this.buffers.length,
+                        this.producers.length,
+                        this.consumers.length
                 )
         );
 
@@ -93,7 +98,7 @@ public class ResultCollector implements CSProcess {
 
     public void run() {
         try {
-            TimeUnit.SECONDS.sleep(this.timeSleep);
+            TimeUnit.SECONDS.sleep(this.timeSleep - 1);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -105,5 +110,13 @@ public class ResultCollector implements CSProcess {
         for (Consumer consumer : this.consumers) {
             consumer.deactivate();
         }
+
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        this.collectResults(0);
     }
 }

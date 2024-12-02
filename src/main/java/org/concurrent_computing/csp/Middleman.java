@@ -3,7 +3,6 @@ package src.main.java.org.concurrent_computing.csp;
 import org.jcsp.lang.*;
 
 import java.util.Arrays;
-import java.util.function.Consumer;
 
 public class Middleman implements CSProcess {
     private final int buffersCount;
@@ -57,6 +56,7 @@ public class Middleman implements CSProcess {
         this.deactivatedCount++;
         if (this.deactivatedCount == this.producersRequests.length + this.consumersRequests.length) {
             this.isActive = false;
+            System.out.println("successful power off");
             this.resultCollector.collectResults(this.opCount);
         }
     }
