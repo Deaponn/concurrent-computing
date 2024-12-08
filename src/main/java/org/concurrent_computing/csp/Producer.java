@@ -42,6 +42,7 @@ public class Producer implements CSProcess {
 
     void deactivate() {
         this.isActive = false;
+        this.middleman.deactivate();
     }
 
     public void run() {
@@ -51,6 +52,5 @@ public class Producer implements CSProcess {
             this.sendToBuffer[bufferIndex].write(this.item); // send to the buffer
             this.opCount++;
         }
-        this.middleman.deactivate();
     }
 }

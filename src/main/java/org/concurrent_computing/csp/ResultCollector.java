@@ -3,6 +3,8 @@ package src.main.java.org.concurrent_computing.csp;
 import org.jcsp.lang.*;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -43,21 +45,26 @@ public class ResultCollector implements CSProcess {
                 Arrays.stream(this.buffers)
                         .mapToInt(Buffer::getOpCount)
                         .toArray(),
-                // es, bs, b, p, k - element size, buffer size, buffers, producers, konsumers,
-                String.format("csp_test/results%des%dbs%db%dp%dk.csv",
-                        this.itemSize,
-                        this.bufferCapacity,
-                        this.buffers.length,
+                // p, c, b, bs, is - producers, consumers, buffers, buffer size, item size
+                String.format("csp_test/p%dc%db%dbs%dis%d",
                         this.producers.length,
-                        this.consumers.length
+                        this.consumers.length,
+                        this.buffers.length,
+                        this.bufferCapacity,
+                        this.itemSize
                 )
         );
 
         exit(0);
     }
 
-    private static void saveToCSV(int middleman, int[] producers, int[] consumers, int[] buffers, String filename) {
-        File csvOutputFile = new File(filename);
+    private static void saveToCSV(int middleman, int[] producers, int[] consumers, int[] buffers, String testName) {
+        try {
+            Files.createDirectories(Paths.get(testName));
+        } catch (IOException ignored) {
+        }
+
+        File csvOutputFile = new File(String.format("%s/results.csv", testName));
         if (!csvOutputFile.isFile()) {
             try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
                 pw.print("middleman,");
@@ -98,7 +105,7 @@ public class ResultCollector implements CSProcess {
 
     public void run() {
         try {
-            TimeUnit.SECONDS.sleep(this.timeSleep - 1);
+            TimeUnit.SECONDS.sleep(this.timeSleep);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -110,13 +117,5 @@ public class ResultCollector implements CSProcess {
         for (Consumer consumer : this.consumers) {
             consumer.deactivate();
         }
-
-        try {
-            TimeUnit.SECONDS.sleep(1);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        this.collectResults(0);
     }
 }

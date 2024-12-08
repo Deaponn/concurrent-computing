@@ -6,12 +6,12 @@ import java.util.Arrays;
 
 public final class Main {
     public static void main(String[] args) throws InterruptedException {
+        int producersCount = 150;
+        int consumersCount = 150;
         int buffersCount = 150;
-        int producersCount = 250;
-        int consumersCount = 250;
+        int bufferCapacity = 30;
+        int itemSize = 1024; // in bytes
 
-        int bufferCapacity = 10;
-        int itemSize = 1024 * 1024; // in bytes
         int testTime = 10;
 
         Buffer[] buffers = new Buffer[buffersCount];

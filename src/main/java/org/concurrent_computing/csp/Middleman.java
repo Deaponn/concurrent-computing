@@ -56,7 +56,6 @@ public class Middleman implements CSProcess {
         this.deactivatedCount++;
         if (this.deactivatedCount == this.producersRequests.length + this.consumersRequests.length) {
             this.isActive = false;
-            System.out.println("successful power off");
             this.resultCollector.collectResults(this.opCount);
         }
     }

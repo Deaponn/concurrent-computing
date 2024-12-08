@@ -38,6 +38,7 @@ public class Consumer implements CSProcess {
 
     void deactivate() {
         this.isActive = false;
+        this.middleman.deactivate();
     }
 
     public void run() {
@@ -48,6 +49,5 @@ public class Consumer implements CSProcess {
             char[] bufferContent = (char[]) this.receiveFromBuffer[bufferIndex].read(); // receive from the buffer
             this.opCount++;
         }
-        this.middleman.deactivate();
     }
 }
